@@ -3,22 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Creador de Tours Virtuales 3D/360°</title>
-    
-    <!-- Babylon.js -->
-    <script src="https://cdn.babylonjs.com/babylon.js"></script>
-    <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
-    <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
-    
-    <!-- Photo Sphere Viewer -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/core@5/index.min.css"/>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.156.0/build/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/core@5/index.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/markers-plugin@5/index.min.js"></script>
-    
-    <!-- Tipografía moderna -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
+    <title>Tour Virtual Profesional</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -27,112 +13,56 @@
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: #0a0a0a;
-            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
             overflow: hidden;
         }
 
-        /* Pantalla de inicio */
-        .start-screen {
+        .loading-screen {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a0a 100%);
+            background: #1a1a1a;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
-            z-index: 1000;
+            align-items: center;
+            z-index: 10000;
             transition: opacity 0.5s ease-out;
         }
 
-        .start-screen.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .app-title {
-            font-size: 3.5rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 1rem;
+        .loading-content {
             text-align: center;
+            color: #e0e0e0;
         }
 
-        .app-subtitle {
-            font-size: 1.2rem;
-            color: #a0a0a0;
-            margin-bottom: 3rem;
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #333;
+            border-top: 4px solid #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
         }
 
-        .start-button {
-            padding: 1rem 3rem;
-            font-size: 1.1rem;
-            font-weight: 600;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
-        .start-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 25px rgba(102, 126, 234, 0.6);
-        }
-
-        .logo-container {
-            position: absolute;
-            bottom: 2rem;
+        .container {
             display: flex;
-            gap: 2rem;
-            align-items: center;
-        }
-
-        .logo-placeholder {
-            width: 100px;
-            height: 40px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.8rem;
-            color: #666;
-        }
-
-        /* Editor principal */
-        .editor-container {
-            display: none;
-            width: 100%;
             height: 100vh;
-            position: relative;
         }
 
-        .editor-container.active {
-            display: block;
-        }
-
-        /* Panel lateral */
         .sidebar {
-            position: fixed;
-            left: 0;
-            top: 0;
             width: 300px;
-            height: 100%;
-            background: rgba(20, 20, 30, 0.95);
-            backdrop-filter: blur(10px);
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 1.5rem;
+            background: #2a2a2a;
+            border-right: 2px solid #404040;
             overflow-y: auto;
-            z-index: 100;
             transition: transform 0.3s ease;
         }
 
@@ -140,981 +70,1349 @@
             transform: translateX(-100%);
         }
 
-        .sidebar h2 {
-            font-size: 1.2rem;
+        .sidebar-header {
+            padding: 20px;
+            background: #333;
+            border-bottom: 1px solid #404040;
+        }
+
+        .sidebar-title {
+            font-size: 18px;
             font-weight: 600;
-            margin-bottom: 1.5rem;
-            color: #ffffff;
+            color: #fff;
+            margin-bottom: 5px;
         }
 
-        .sidebar-section {
-            margin-bottom: 2rem;
+        .sidebar-subtitle {
+            font-size: 12px;
+            color: #999;
         }
 
-        .sidebar-section h3 {
-            font-size: 0.9rem;
-            font-weight: 500;
-            color: #888;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 1rem;
+        .sidebar-content {
+            padding: 20px;
         }
 
-        .file-input-wrapper {
-            position: relative;
-            overflow: hidden;
-            display: inline-block;
-            width: 100%;
+        .section {
+            margin-bottom: 25px;
         }
 
-        .file-input-wrapper input[type=file] {
-            position: absolute;
-            left: -9999px;
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 12px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #404040;
         }
 
-        .file-input-label {
+        .input-group {
+            margin-bottom: 12px;
+        }
+
+        .input-label {
             display: block;
-            padding: 0.8rem 1.2rem;
-            background: rgba(102, 126, 234, 0.2);
-            border: 1px solid rgba(102, 126, 234, 0.5);
-            border-radius: 8px;
-            cursor: pointer;
-            text-align: center;
-            transition: all 0.2s ease;
-            font-size: 0.9rem;
+            font-size: 12px;
+            color: #ccc;
+            margin-bottom: 4px;
         }
 
-        .file-input-label:hover {
-            background: rgba(102, 126, 234, 0.3);
-            border-color: rgba(102, 126, 234, 0.8);
-        }
-
-        /* Área de vista 3D/360 */
-        .viewer-container {
-            position: absolute;
-            top: 0;
-            left: 300px;
-            right: 0;
-            bottom: 0;
-            background: #000;
-            transition: left 0.3s ease;
-        }
-
-        .viewer-container.full-width {
-            left: 0;
-        }
-
-        #renderCanvas {
+        .input-field {
             width: 100%;
-            height: 100%;
-            touch-action: none;
+            padding: 8px 12px;
+            background: #404040;
+            border: 1px solid #555;
+            border-radius: 4px;
+            color: #e0e0e0;
+            font-size: 14px;
         }
 
-        #panoramaViewer {
-            width: 100%;
-            height: 100%;
-            display: none;
-        }
-
-        /* Controles flotantes */
-        .floating-controls {
-            position: fixed;
-            top: 1rem;
-            right: 1rem;
-            display: flex;
-            gap: 0.5rem;
-            z-index: 200;
-        }
-
-        .control-button {
-            width: 48px;
-            height: 48px;
-            background: rgba(20, 20, 30, 0.9);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            color: white;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-            font-size: 1.2rem;
-        }
-
-        .control-button:hover {
-            background: rgba(102, 126, 234, 0.3);
-            border-color: rgba(102, 126, 234, 0.5);
-            transform: translateY(-2px);
-        }
-
-        /* Modal de configuración de POI */
-        .poi-modal {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(20, 20, 30, 0.98);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 2rem;
-            width: 400px;
-            max-width: 90%;
-            z-index: 300;
-            display: none;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-        }
-
-        .poi-modal.active {
-            display: block;
-        }
-
-        .poi-modal h3 {
-            font-size: 1.3rem;
-            margin-bottom: 1.5rem;
-            color: #ffffff;
-        }
-
-        .form-group {
-            margin-bottom: 1.2rem;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 0.9rem;
-            color: #a0a0a0;
-            margin-bottom: 0.5rem;
-        }
-
-        .form-group input,
-        .form-group textarea,
-        .form-group select {
-            width: 100%;
-            padding: 0.8rem;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            color: white;
-            font-family: inherit;
-            transition: all 0.2s ease;
-        }
-
-        .form-group input:focus,
-        .form-group textarea:focus,
-        .form-group select:focus {
+        .input-field:focus {
             outline: none;
-            border-color: rgba(102, 126, 234, 0.5);
-            background: rgba(255, 255, 255, 0.08);
+            border-color: #4CAF50;
+            background: #4a4a4a;
         }
 
-        .modal-buttons {
-            display: flex;
-            gap: 1rem;
-            margin-top: 1.5rem;
-        }
-
-        .modal-button {
-            flex: 1;
-            padding: 0.8rem;
+        .btn {
+            padding: 8px 16px;
+            background: #4CAF50;
+            color: white;
             border: none;
-            border-radius: 8px;
-            font-weight: 500;
+            border-radius: 4px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            font-size: 12px;
+            font-weight: 600;
+            transition: background 0.2s;
         }
 
-        .modal-button.primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+        .btn:hover {
+            background: #45a049;
         }
 
-        .modal-button.secondary {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
+        .btn-secondary {
+            background: #666;
         }
 
-        .modal-button:hover {
-            transform: translateY(-1px);
+        .btn-secondary:hover {
+            background: #777;
         }
 
-        /* Overlay para modal */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
+        .btn-danger {
+            background: #f44336;
+        }
+
+        .btn-danger:hover {
+            background: #da190b;
+        }
+
+        .btn-full {
             width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 299;
-            display: none;
+            margin-bottom: 8px;
         }
 
-        .modal-overlay.active {
-            display: block;
+        .scene-list {
+            list-style: none;
         }
 
-        /* Lista de POIs */
+        .scene-item {
+            padding: 12px;
+            background: #383838;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            border-left: 3px solid #4CAF50;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .scene-item:hover {
+            background: #444;
+        }
+
+        .scene-item.active {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .scene-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .scene-type {
+            font-size: 11px;
+            color: #aaa;
+        }
+
         .poi-list {
-            max-height: 300px;
-            overflow-y: auto;
+            list-style: none;
         }
 
         .poi-item {
-            padding: 0.8rem;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
-            margin-bottom: 0.5rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 8px 12px;
+            background: #383838;
+            margin-bottom: 6px;
+            border-radius: 4px;
+            font-size: 12px;
         }
 
-        .poi-item:hover {
-            background: rgba(255, 255, 255, 0.08);
+        .poi-info {
+            flex: 1;
         }
 
-        .poi-item .poi-name {
-            font-weight: 500;
-        }
-
-        .poi-item .poi-type {
-            font-size: 0.8rem;
-            color: #888;
-        }
-
-        /* Botón de exportar */
-        .export-button {
-            width: 100%;
-            padding: 1rem;
-            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-            border: none;
-            border-radius: 8px;
-            color: white;
+        .poi-title {
             font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            margin-top: 2rem;
+            color: #fff;
         }
 
-        .export-button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4);
+        .poi-coords {
+            color: #999;
+            font-size: 10px;
         }
 
-        /* Indicador de modo */
-        .mode-indicator {
-            position: fixed;
-            bottom: 1rem;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(20, 20, 30, 0.9);
-            backdrop-filter: blur(10px);
-            padding: 0.8rem 2rem;
-            border-radius: 50px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            font-size: 0.9rem;
-            z-index: 150;
+        .poi-actions {
+            display: flex;
+            gap: 4px;
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 100%;
-                transform: translateX(-100%);
-            }
-            
-            .viewer-container {
-                left: 0;
-            }
-            
-            .app-title {
-                font-size: 2.5rem;
-            }
-            
-            .control-button {
-                width: 40px;
-                height: 40px;
-                font-size: 1rem;
-            }
+        .btn-small {
+            padding: 4px 8px;
+            font-size: 10px;
         }
 
-        /* Animaciones */
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .main-view {
+            flex: 1;
+            position: relative;
+            background: #0f0f0f;
         }
 
-        .fade-in {
-            animation: fadeIn 0.5s ease-out;
-        }
-
-        /* Tooltips */
-        .tooltip {
+        .viewer-container {
+            width: 100%;
+            height: 100%;
             position: relative;
         }
 
-        .tooltip::after {
-            content: attr(data-tooltip);
+        .controls {
             position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.9);
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            white-space: nowrap;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.2s ease;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 1000;
         }
 
-        .tooltip:hover::after {
+        .control-group {
+            background: rgba(42, 42, 42, 0.9);
+            border-radius: 6px;
+            padding: 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid #404040;
+        }
+
+        .toggle-sidebar {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: rgba(42, 42, 42, 0.9);
+            border: 1px solid #404040;
+            backdrop-filter: blur(10px);
+        }
+
+        .poi-marker {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #4CAF50;
+            border: 3px solid white;
+            cursor: pointer;
+            transform: translate(-50%, -50%);
+            transition: all 0.3s ease;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        }
+
+        .poi-marker:hover {
+            transform: translate(-50%, -50%) scale(1.2);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        .poi-marker.info {
+            background: #2196F3;
+        }
+
+        .poi-marker.link {
+            background: #FF9800;
+        }
+
+        .poi-marker.model {
+            background: #9C27B0;
+        }
+
+        .poi-tooltip {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 101;
+        }
+
+        .poi-marker:hover .poi-tooltip {
             opacity: 1;
         }
 
-        /* Scrollbar personalizada */
-        ::-webkit-scrollbar {
-            width: 8px;
+        .info-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(42, 42, 42, 0.95);
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid #404040;
+            backdrop-filter: blur(10px);
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
         }
 
-        ::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
+        .info-panel.active {
+            transform: translateY(0);
         }
 
-        ::-webkit-scrollbar-thumb {
-            background: rgba(102, 126, 234, 0.5);
+        .info-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .info-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .close-info {
+            background: none;
+            border: none;
+            color: #999;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .close-info:hover {
+            color: #fff;
+        }
+
+        .error-message {
+            background: #f44336;
+            color: white;
+            padding: 12px;
             border-radius: 4px;
+            margin-bottom: 12px;
+            font-size: 12px;
         }
 
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(102, 126, 234, 0.7);
+        .success-message {
+            background: #4CAF50;
+            color: white;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            font-size: 12px;
+        }
+
+        .canvas-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .scene-selector {
+            margin-bottom: 12px;
+        }
+
+        .export-section {
+            border-top: 1px solid #404040;
+            padding-top: 20px;
+            margin-top: 20px;
+        }
+
+        .url-input {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .url-input input {
+            flex: 1;
+        }
+
+        .asset-list {
+            max-height: 200px;
+            overflow-y: auto;
+            background: #383838;
+            border-radius: 4px;
+            padding: 8px;
+        }
+
+        .asset-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px;
+            border-bottom: 1px solid #444;
+            font-size: 12px;
+        }
+
+        .asset-item:last-child {
+            border-bottom: none;
+        }
+
+        .coordinate-display {
+            background: #383838;
+            padding: 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 11px;
+            color: #4CAF50;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 280px;
+                position: absolute;
+                height: 100%;
+                z-index: 2000;
+            }
+            
+            .controls {
+                right: 10px;
+                top: 10px;
+            }
+            
+            .info-panel {
+                left: 10px;
+                right: 10px;
+                bottom: 10px;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Pantalla de inicio -->
-    <div class="start-screen" id="startScreen">
-        <h1 class="app-title">Tour Virtual 3D/360°</h1>
-        <p class="app-subtitle">Crea experiencias inmersivas interactivas</p>
-        <button class="start-button" onclick="startEditor()">Comenzar</button>
-        <div class="logo-container">
-            <div class="logo-placeholder">Logo 1</div>
-            <div class="logo-placeholder">Logo 2</div>
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <h3>Cargando Tour Virtual</h3>
+            <p>Preparando experiencia inmersiva...</p>
         </div>
     </div>
 
-    <!-- Editor principal -->
-    <div class="editor-container" id="editorContainer">
-        <!-- Panel lateral -->
+    <div class="container">
+        <!-- Sidebar -->
         <div class="sidebar" id="sidebar">
-            <h2>Editor de Tour Virtual</h2>
+            <div class="sidebar-header">
+                <div class="sidebar-title">Tour Virtual Pro</div>
+                <div class="sidebar-subtitle">Panel de Gestión</div>
+            </div>
             
-            <div class="sidebar-section">
-                <h3>Modelo 3D</h3>
-                <div class="file-input-wrapper">
-                    <input type="file" id="modelInput" accept=".gltf,.glb,.babylon" onchange="loadModel(event)">
-                    <label for="modelInput" class="file-input-label">
-                        📦 Cargar Modelo 3D
-                    </label>
+            <div class="sidebar-content">
+                <!-- Gestión de Escenas -->
+                <div class="section">
+                    <div class="section-title">Escenas</div>
+                    
+                    <div class="input-group">
+                        <label class="input-label">Nombre de la Escena</label>
+                        <input type="text" class="input-field" id="sceneName" placeholder="Ej: Sala Principal">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label class="input-label">Tipo de Contenido</label>
+                        <select class="input-field" id="sceneType">
+                            <option value="panorama">Panorama 360°</option>
+                            <option value="model3d">Modelo 3D</option>
+                            <option value="photo2d">Foto 2D</option>
+                        </select>
+                    </div>
+                    
+                    <div class="url-input">
+                        <input type="text" class="input-field" id="sceneUrl" placeholder="URL del archivo">
+                        <button class="btn btn-secondary" onclick="addAsset()">+</button>
+                    </div>
+                    
+                    <button class="btn btn-full" onclick="addScene()">Agregar Escena</button>
+                    
+                    <ul class="scene-list" id="sceneList"></ul>
+                </div>
+
+                <!-- Gestión de POIs -->
+                <div class="section">
+                    <div class="section-title">Puntos de Interés (POIs)</div>
+                    
+                    <div class="input-group">
+                        <label class="input-label">Título del POI</label>
+                        <input type="text" class="input-field" id="poiTitle" placeholder="Ej: Información Principal">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label class="input-label">Tipo de POI</label>
+                        <select class="input-field" id="poiType">
+                            <option value="info">Información (ℹ️)</option>
+                            <option value="link">Enlace de Escena (🔗)</option>
+                            <option value="model">Modelo 3D (📦)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label class="input-label">Descripción/URL</label>
+                        <textarea class="input-field" id="poiContent" rows="3" placeholder="Contenido del POI"></textarea>
+                    </div>
+                    
+                    <div class="coordinate-display" id="coordinateDisplay">
+                        Coordenadas: Haz clic en la escena
+                    </div>
+                    
+                    <button class="btn btn-full" onclick="addPOI()" disabled id="addPoiBtn">Agregar POI</button>
+                    
+                    <ul class="poi-list" id="poiList"></ul>
+                </div>
+
+                <!-- Assets Externos -->
+                <div class="section">
+                    <div class="section-title">Assets Externos</div>
+                    <div class="asset-list" id="assetList">
+                        <div class="asset-item">
+                            <span>📁 Assets guardados aparecerán aquí</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Exportar -->
+                <div class="export-section">
+                    <div class="section-title">Exportar Tour</div>
+                    <button class="btn btn-full" onclick="exportTour()">Generar HTML</button>
+                    <button class="btn btn-secondary btn-full" onclick="downloadConfig()">Descargar Config JSON</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vista Principal -->
+        <div class="main-view">
+            <button class="btn toggle-sidebar" id="toggleSidebar" onclick="toggleSidebar()">☰</button>
+            
+            <div class="viewer-container">
+                <div class="canvas-container" id="canvasContainer"></div>
+            </div>
+
+            <!-- Controles -->
+            <div class="controls">
+                <div class="control-group">
+                    <label class="input-label">Escena Actual</label>
+                    <select class="input-field scene-selector" id="currentScene" onchange="loadScene(this.value)">
+                        <option value="">Seleccionar escena...</option>
+                    </select>
                 </div>
             </div>
 
-            <div class="sidebar-section">
-                <h3>Imágenes 360°</h3>
-                <div class="file-input-wrapper">
-                    <input type="file" id="panoramaInput" accept="image/*" multiple onchange="loadPanoramas(event)">
-                    <label for="panoramaInput" class="file-input-label">
-                        🌐 Cargar Imágenes 360°
-                    </label>
+            <!-- Panel de Información -->
+            <div class="info-panel" id="infoPanel">
+                <div class="info-header">
+                    <div class="info-title" id="infoTitle">Título del POI</div>
+                    <button class="close-info" onclick="closeInfo()">×</button>
                 </div>
-                <div id="panoramaList" class="poi-list" style="margin-top: 1rem;"></div>
-            </div>
-
-            <div class="sidebar-section">
-                <h3>Puntos de Interés</h3>
-                <p style="font-size: 0.85rem; color: #888; margin-bottom: 1rem;">
-                    Haz clic en el modelo 3D para agregar POIs
-                </p>
-                <div id="poiList" class="poi-list"></div>
-            </div>
-
-            <div class="sidebar-section">
-                <h3>Configuración</h3>
-                <div class="form-group">
-                    <label>Título del Tour</label>
-                    <input type="text" id="tourTitle" placeholder="Mi Tour Virtual">
-                </div>
-                <div class="form-group">
-                    <label>Descripción</label>
-                    <textarea id="tourDescription" rows="3" placeholder="Descripción del tour..."></textarea>
+                <div class="info-content" id="infoContent">
+                    Contenido del POI...
                 </div>
             </div>
-
-            <button class="export-button" onclick="exportTour()">
-                💾 Exportar Tour
-            </button>
-        </div>
-
-        <!-- Área de visualización -->
-        <div class="viewer-container" id="viewerContainer">
-            <canvas id="renderCanvas"></canvas>
-            <div id="panoramaViewer"></div>
-        </div>
-
-        <!-- Controles flotantes -->
-        <div class="floating-controls">
-            <button class="control-button tooltip" data-tooltip="Menu" onclick="toggleSidebar()">☰</button>
-            <button class="control-button tooltip" data-tooltip="Vista 3D" onclick="switchTo3D()">🎮</button>
-            <button class="control-button tooltip" data-tooltip="Vista 360°" onclick="switchTo360()">🌐</button>
-            <button class="control-button tooltip" data-tooltip="Volver" onclick="goBack()">↩️</button>
-            <button class="control-button tooltip" data-tooltip="VR" onclick="enterVR()">🥽</button>
-        </div>
-
-        <!-- Indicador de modo -->
-        <div class="mode-indicator" id="modeIndicator">
-            Modo: Vista 3D
-        </div>
-    </div>
-
-    <!-- Modal de configuración de POI -->
-    <div class="modal-overlay" id="modalOverlay" onclick="closePOIModal()"></div>
-    <div class="poi-modal" id="poiModal">
-        <h3>Configurar Punto de Interés</h3>
-        <div class="form-group">
-            <label>Nombre del POI</label>
-            <input type="text" id="poiName" placeholder="Punto de interés">
-        </div>
-        <div class="form-group">
-            <label>Tipo</label>
-            <select id="poiType">
-                <option value="panorama">Imagen 360°</option>
-                <option value="info">Información</option>
-                <option value="audio">Audio</option>
-                <option value="video">Video</option>
-            </select>
-        </div>
-        <div class="form-group" id="panoramaSelectGroup">
-            <label>Seleccionar Panorama</label>
-            <select id="poiPanorama"></select>
-        </div>
-        <div class="form-group" id="infoTextGroup" style="display: none;">
-            <label>Texto de Información</label>
-            <textarea id="poiInfo" rows="3" placeholder="Información del punto..."></textarea>
-        </div>
-        <div class="modal-buttons">
-            <button class="modal-button secondary" onclick="closePOIModal()">Cancelar</button>
-            <button class="modal-button primary" onclick="savePOI()">Guardar</button>
         </div>
     </div>
 
     <script>
-        // Estado global de la aplicación
-        let app = {
-            engine: null,
-            scene: null,
-            camera: null,
-            canvas: null,
-            model: null,
-            panoramaViewer: null,
-            currentMode: '3d',
-            pois: [],
-            panoramas: [],
-            currentPanorama: null,
-            history: [],
-            selectedPOI: null,
-            poiMeshes: [],
-            speech: null
-        };
+        class VirtualTour {
+            constructor() {
+                this.scenes = [];
+                this.currentScene = null;
+                this.currentSceneIndex = -1;
+                this.pois = {};
+                this.assets = [];
+                this.renderer = null;
+                this.scene = null;
+                this.camera = null;
+                this.mesh = null;
+                this.controls = null;
+                this.raycaster = new THREE.Raycaster();
+                this.mouse = new THREE.Vector2();
+                this.isMouseDown = false;
+                this.clickCoordinates = null;
+                
+                this.init();
+            }
 
-        // Inicializar síntesis de voz
-        if ('speechSynthesis' in window) {
-            app.speech = window.speechSynthesis;
-        }
+            init() {
+                this.setupRenderer();
+                this.setupEventListeners();
+                this.hideLoading();
+            }
 
-        // Función para iniciar el editor
-        function startEditor() {
-            document.getElementById('startScreen').classList.add('hidden');
-            setTimeout(() => {
-                document.getElementById('startScreen').style.display = 'none';
-                document.getElementById('editorContainer').classList.add('active');
-                initBabylon();
-            }, 500);
-        }
+            setupRenderer() {
+                const container = document.getElementById('canvasContainer');
+                
+                // Renderer
+                this.renderer = new THREE.WebGLRenderer({ antialias: true });
+                this.renderer.setSize(container.clientWidth, container.clientHeight);
+                this.renderer.setPixelRatio(window.devicePixelRatio);
+                container.appendChild(this.renderer.domElement);
 
-        // Inicializar Babylon.js
-        function initBabylon() {
-            app.canvas = document.getElementById('renderCanvas');
-            app.engine = new BABYLON.Engine(app.canvas, true, { preserveDrawingBuffer: true, stencil: true });
-            
-            app.scene = new BABYLON.Scene(app.engine);
-            app.scene.clearColor = new BABYLON.Color3(0.05, 0.05, 0.05);
-            
-            // Cámara
-            app.camera = new BABYLON.ArcRotateCamera('camera', 0, 0, 10, BABYLON.Vector3.Zero(), app.scene);
-            app.camera.attachControl(app.canvas, true);
-            app.camera.wheelPrecision = 50;
-            
-            // Luces
-            const light1 = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 1, 0), app.scene);
-            light1.intensity = 0.7;
-            
-            const light2 = new BABYLON.DirectionalLight('light2', new BABYLON.Vector3(-1, -2, -1), app.scene);
-            light2.intensity = 0.3;
-            
-            // Cubo de ejemplo
-            const box = BABYLON.MeshBuilder.CreateBox('box', { size: 2 }, app.scene);
-            const material = new BABYLON.StandardMaterial('boxMat', app.scene);
-            material.diffuseColor = new BABYLON.Color3(0.4, 0.5, 0.9);
-            box.material = material;
-            
-            // Eventos de clic para agregar POIs
-            app.scene.onPointerObservable.add((pointerInfo) => {
-                if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERDOWN) {
-                    if (pointerInfo.pickInfo.hit && pointerInfo.pickInfo.pickedMesh) {
-                        // Verificar si no es un POI existente
-                        if (!pointerInfo.pickInfo.pickedMesh.name.startsWith('poi_')) {
-                            createPOI(pointerInfo.pickInfo.pickedPoint);
-                        }
+                // Scene
+                this.scene = new THREE.Scene();
+
+                // Camera
+                this.camera = new THREE.PerspectiveCamera(
+                    75,
+                    container.clientWidth / container.clientHeight,
+                    0.1,
+                    1000
+                );
+
+                // Controls básicos de mouse
+                this.setupMouseControls();
+
+                // Resize handler
+                window.addEventListener('resize', () => this.onWindowResize());
+                
+                // Render loop
+                this.animate();
+            }
+
+            setupMouseControls() {
+                const canvas = this.renderer.domElement;
+                let lastMouseX = 0;
+                let lastMouseY = 0;
+                let isMouseDown = false;
+
+                canvas.addEventListener('mousedown', (event) => {
+                    isMouseDown = true;
+                    lastMouseX = event.clientX;
+                    lastMouseY = event.clientY;
+                    
+                    // Para agregar POIs
+                    this.updateCoordinates(event);
+                });
+
+                canvas.addEventListener('mousemove', (event) => {
+                    if (isMouseDown) {
+                        const deltaX = event.clientX - lastMouseX;
+                        const deltaY = event.clientY - lastMouseY;
+                        
+                        this.camera.rotation.y -= deltaX * 0.005;
+                        this.camera.rotation.x -= deltaY * 0.005;
+                        
+                        // Limitar rotación vertical
+                        this.camera.rotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, this.camera.rotation.x));
+                        
+                        lastMouseX = event.clientX;
+                        lastMouseY = event.clientY;
+                    }
+                });
+
+                canvas.addEventListener('mouseup', () => {
+                    isMouseDown = false;
+                });
+
+                // Zoom con rueda del mouse
+                canvas.addEventListener('wheel', (event) => {
+                    event.preventDefault();
+                    const fov = this.camera.fov + event.deltaY * 0.05;
+                    this.camera.fov = Math.max(10, Math.min(100, fov));
+                    this.camera.updateProjectionMatrix();
+                });
+            }
+
+            updateCoordinates(event) {
+                const rect = this.renderer.domElement.getBoundingClientRect();
+                this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+                this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+                if (this.mesh && this.mesh.geometry) {
+                    this.raycaster.setFromCamera(this.mouse, this.camera);
+                    const intersects = this.raycaster.intersectObject(this.mesh);
+                    
+                    if (intersects.length > 0) {
+                        const point = intersects[0].point;
+                        this.clickCoordinates = {
+                            x: Math.round(event.clientX - rect.left),
+                            y: Math.round(event.clientY - rect.top),
+                            worldX: point.x.toFixed(3),
+                            worldY: point.y.toFixed(3),
+                            worldZ: point.z.toFixed(3)
+                        };
+                        
+                        document.getElementById('coordinateDisplay').textContent = 
+                            `Coordenadas: ${this.clickCoordinates.x}, ${this.clickCoordinates.y} (Mundo: ${this.clickCoordinates.worldX}, ${this.clickCoordinates.worldY}, ${this.clickCoordinates.worldZ})`;
+                        
+                        document.getElementById('addPoiBtn').disabled = false;
                     }
                 }
-            });
-            
-            // Render loop
-            app.engine.runRenderLoop(() => {
-                app.scene.render();
-            });
-            
-            // Resize
-            window.addEventListener('resize', () => {
-                app.engine.resize();
-            });
-        }
-
-        // Cargar modelo 3D
-        function loadModel(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            const url = URL.createObjectURL(file);
-            
-            // Eliminar modelo anterior
-            if (app.model) {
-                app.model.dispose();
             }
-            
-            // Cargar nuevo modelo
-            BABYLON.SceneLoader.LoadAssetContainer(url, '', app.scene, (container) => {
-                container.addAllToScene();
-                app.model = container.meshes[0];
-                
-                // Ajustar cámara
-                const boundingInfo = app.model.getHierarchyBoundingVectors();
-                const size = boundingInfo.max.subtract(boundingInfo.min);
-                const maxDim = Math.max(size.x, size.y, size.z);
-                
-                app.camera.radius = maxDim * 2;
-                app.camera.target = BABYLON.Vector3.Center(boundingInfo.min, boundingInfo.max);
-                
-                showNotification('Modelo 3D cargado correctamente');
-            });
-        }
 
-        // Cargar imágenes panorámicas
-        function loadPanoramas(event) {
-            const files = event.target.files;
-            const list = document.getElementById('panoramaList');
-            
-            for (let file of files) {
-                const url = URL.createObjectURL(file);
-                const panorama = {
-                    id: Date.now() + Math.random(),
-                    name: file.name,
-                    url: url,
+            animate() {
+                requestAnimationFrame(() => this.animate());
+                this.renderer.render(this.scene, this.camera);
+            }
+
+            onWindowResize() {
+                const container = document.getElementById('canvasContainer');
+                this.camera.aspect = container.clientWidth / container.clientHeight;
+                this.camera.updateProjectionMatrix();
+                this.renderer.setSize(container.clientWidth, container.clientHeight);
+            }
+
+            setupEventListeners() {
+                // Keyboard shortcuts
+                document.addEventListener('keydown', (event) => {
+                    if (event.key === 'Tab') {
+                        event.preventDefault();
+                        this.toggleSidebar();
+                    }
+                });
+            }
+
+            hideLoading() {
+                setTimeout(() => {
+                    document.getElementById('loadingScreen').style.opacity = '0';
+                    setTimeout(() => {
+                        document.getElementById('loadingScreen').style.display = 'none';
+                    }, 500);
+                }, 1000);
+            }
+
+            addScene(name, type, url) {
+                const scene = {
+                    id: Date.now(),
+                    name: name || `Escena ${this.scenes.length + 1}`,
+                    type: type || 'panorama',
+                    url: url || '',
                     pois: []
                 };
+
+                this.scenes.push(scene);
+                this.updateSceneList();
+                this.updateSceneSelector();
+                this.showMessage(`Escena "${scene.name}" agregada exitosamente`, 'success');
                 
-                app.panoramas.push(panorama);
+                return scene.id;
+            }
+
+            loadScene(sceneId) {
+                if (!sceneId) return;
                 
-                // Agregar a la lista visual
-                const item = document.createElement('div');
-                item.className = 'poi-item';
-                item.innerHTML = `
-                    <span class="poi-name">${file.name}</span>
-                    <span class="poi-type">360°</span>
-                `;
-                item.onclick = () => loadPanoramaInViewer(panorama);
-                list.appendChild(item);
-            }
-            
-            updatePanoramaSelect();
-            showNotification(`${files.length} imagen(es) 360° cargadas`);
-        }
+                const scene = this.scenes.find(s => s.id == sceneId);
+                if (!scene) return;
 
-        // Crear POI en el modelo 3D
-        function createPOI(position) {
-            // Crear esfera visual para el POI
-            const sphere = BABYLON.MeshBuilder.CreateSphere(`poi_${Date.now()}`, {
-                diameter: 0.3,
-                segments: 16
-            }, app.scene);
-            
-            sphere.position = position;
-            
-            // Material brillante para el POI
-            const material = new BABYLON.StandardMaterial('poiMat', app.scene);
-            material.emissiveColor = new BABYLON.Color3(0.4, 0.5, 0.9);
-            material.diffuseColor = new BABYLON.Color3(0.4, 0.5, 0.9);
-            sphere.material = material;
-            
-            // Animación de pulso
-            BABYLON.Animation.CreateAndStartAnimation('pulse', sphere, 'scaling', 30, 60, 
-                new BABYLON.Vector3(1, 1, 1), 
-                new BABYLON.Vector3(1.2, 1.2, 1.2), 
-                BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE
-            );
-            
-            // Agregar comportamiento de arrastre
-            const dragBehavior = new BABYLON.PointerDragBehavior();
-            dragBehavior.moveAttached = false;
-            dragBehavior.onDragObservable.add((event) => {
-                sphere.position = event.dragPlanePoint;
-            });
-            sphere.addBehavior(dragBehavior);
-            
-            // Datos del POI
-            const poi = {
-                id: Date.now(),
-                name: `POI ${app.pois.length + 1}`,
-                position: position,
-                type: 'panorama',
-                panoramaId: null,
-                mesh: sphere
-            };
-            
-            app.poiMeshes.push(sphere);
-            
-            // Abrir modal de configuración
-            app.selectedPOI = poi;
-            openPOIModal();
-        }
+                this.currentScene = scene;
+                this.currentSceneIndex = this.scenes.indexOf(scene);
 
-        // Modal de POI
-        function openPOIModal() {
-            document.getElementById('modalOverlay').classList.add('active');
-            document.getElementById('poiModal').classList.add('active');
-            
-            // Resetear formulario
-            document.getElementById('poiName').value = app.selectedPOI.name;
-            document.getElementById('poiType').value = app.selectedPOI.type;
-            
-            // Manejar cambio de tipo
-            document.getElementById('poiType').onchange = (e) => {
-                if (e.target.value === 'panorama') {
-                    document.getElementById('panoramaSelectGroup').style.display = 'block';
-                    document.getElementById('infoTextGroup').style.display = 'none';
-                } else if (e.target.value === 'info') {
-                    document.getElementById('panoramaSelectGroup').style.display = 'none';
-                    document.getElementById('infoTextGroup').style.display = 'block';
+                // Limpiar escena anterior
+                if (this.mesh) {
+                    this.scene.remove(this.mesh);
                 }
-            };
-        }
 
-        function closePOIModal() {
-            document.getElementById('modalOverlay').classList.remove('active');
-            document.getElementById('poiModal').classList.remove('active');
-            
-            // Si no se guardó, eliminar el POI
-            if (app.selectedPOI && !app.selectedPOI.saved) {
-                app.selectedPOI.mesh.dispose();
-            }
-        }
-
-        function savePOI() {
-            const poi = app.selectedPOI;
-            poi.name = document.getElementById('poiName').value;
-            poi.type = document.getElementById('poiType').value;
-            
-            if (poi.type === 'panorama') {
-                poi.panoramaId = document.getElementById('poiPanorama').value;
-            } else if (poi.type === 'info') {
-                poi.info = document.getElementById('poiInfo').value;
-            }
-            
-            poi.saved = true;
-            app.pois.push(poi);
-            
-            // Actualizar lista de POIs
-            updatePOIList();
-            
-            // Hacer clic en el POI para activarlo
-            poi.mesh.actionManager = new BABYLON.ActionManager(app.scene);
-            poi.mesh.actionManager.registerAction(
-                new BABYLON.ExecuteCodeAction(
-                    BABYLON.ActionManager.OnPickTrigger,
-                    () => activatePOI(poi)
-                )
-            );
-            
-            closePOIModal();
-            showNotification('POI guardado correctamente');
-        }
-
-        // Activar POI
-        function activatePOI(poi) {
-            if (poi.type === 'panorama' && poi.panoramaId) {
-                const panorama = app.panoramas.find(p => p.id == poi.panoramaId);
-                if (panorama) {
-                    app.history.push({ mode: app.currentMode, data: app.currentPanorama });
-                    loadPanoramaInViewer(panorama);
+                // Cargar nueva escena según tipo
+                switch (scene.type) {
+                    case 'panorama':
+                        this.loadPanorama(scene.url);
+                        break;
+                    case 'model3d':
+                        this.loadModel3D(scene.url);
+                        break;
+                    case 'photo2d':
+                        this.loadPhoto2D(scene.url);
+                        break;
                 }
-            } else if (poi.type === 'info') {
-                showInfoBubble(poi.info);
-                if (app.speech) {
-                    speak(poi.info);
-                }
-            }
-        }
 
-        // Cargar panorama en el visor
-        function loadPanoramaInViewer(panorama) {
-            switchTo360();
-            app.currentPanorama = panorama;
-            
-            // Destruir visor anterior si existe
-            if (app.panoramaViewer) {
-                app.panoramaViewer.destroy();
+                // Cargar POIs de la escena
+                this.loadScenePOIs(scene.id);
+                this.updatePOIList();
             }
-            
-            // Crear nuevo visor
-            const viewerConfig = {
-                container: document.getElementById('panoramaViewer'),
-                panorama: panorama.url,
-                navbar: false,
-                defaultZoomLvl: 50,
-                mousewheel: true,
-                mousemove: true,
-                fisheye: false,
-                plugins: [
-                    [PhotoSphereViewer.MarkersPlugin, {
-                        markers: panorama.pois || []
-                    }]
-                ]
-            };
-            
-            app.panoramaViewer = new PhotoSphereViewer.Viewer(viewerConfig);
-            
-            // Eventos para agregar POIs en la imagen 360
-            app.panoramaViewer.addEventListener('click', (e) => {
-                if (e.data.rightclick) return;
+
+            loadPanorama(imageUrl) {
+                if (!imageUrl) {
+                    imageUrl = 'data:image/svg+xml;base64,' + btoa(`
+                        <svg width="2048" height="1024" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <radialGradient id="bg" cx="50%" cy="50%">
+                                    <stop offset="0%" style="stop-color:#4CAF50"/>
+                                    <stop offset="100%" style="stop-color:#1a1a1a"/>
+                                </radialGradient>
+                            </defs>
+                            <rect width="2048" height="1024" fill="url(#bg)"/>
+                            <text x="1024" y="400" text-anchor="middle" fill="white" font-size="80" font-family="Arial">Panorama Demo</text>
+                            <text x="1024" y="500" text-anchor="middle" fill="#e0e0e0" font-size="40" font-family="Arial">Agrega tu imagen 360°</text>
+                            <text x="1024" y="600" text-anchor="middle" fill="#ccc" font-size="30" font-family="Arial">Haz clic para agregar POIs</text>
+                        </svg>
+                    `);
+                }
+
+                const loader = new THREE.TextureLoader();
+                loader.crossOrigin = 'anonymous';
                 
-                const marker = {
-                    id: Date.now().toString(),
-                    longitude: e.data.longitude,
-                    latitude: e.data.latitude,
-                    image: 'https://photo-sphere-viewer.js.org/assets/pin-red.png',
-                    width: 32,
-                    height: 32,
-                    anchor: 'bottom center',
-                    tooltip: 'Nuevo POI',
-                    data: {
-                        type: 'panorama'
+                loader.load(
+                    imageUrl,
+                    (texture) => {
+                        const geometry = new THREE.SphereGeometry(500, 64, 32);
+                        const material = new THREE.MeshBasicMaterial({
+                            map: texture,
+                            side: THREE.BackSide
+                        });
+                        
+                        this.mesh = new THREE.Mesh(geometry, material);
+                        this.scene.add(this.mesh);
+                        
+                        // Reset camera
+                        this.camera.position.set(0, 0, 0);
+                        this.camera.rotation.set(0, 0, 0);
+                        
+                        this.showMessage('Panorama cargado exitosamente', 'success');
+                    },
+                    undefined,
+                    (error) => {
+                        console.error('Error cargando panorama:', error);
+                        this.showMessage('Error al cargar el panorama. Verifica la URL y que permita CORS.', 'error');
+                        this.loadPanorama(); // Cargar demo
+                    }
+                );
+            }
+
+            loadModel3D(modelUrl) {
+                // Implementación básica para modelos 3D
+                // En producción se usaría GLTFLoader
+                const geometry = new THREE.BoxGeometry(100, 100, 100);
+                const material = new THREE.MeshPhongMaterial({ color: 0x4CAF50 });
+                this.mesh = new THREE.Mesh(geometry, material);
+                
+                // Agregar luz
+                const light = new THREE.DirectionalLight(0xffffff, 1);
+                light.position.set(100, 100, 100);
+                this.scene.add(light);
+                
+                const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
+                this.scene.add(ambientLight);
+                
+                this.scene.add(this.mesh);
+                this.camera.position.set(0, 0, 200);
+                
+                this.showMessage('Modelo 3D demo cargado', 'success');
+            }
+
+            loadPhoto2D(imageUrl) {
+                if (!imageUrl) {
+                    imageUrl = 'data:image/svg+xml;base64,' + btoa(`
+                        <svg width="1024" height="768" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="1024" height="768" fill="#2a2a2a"/>
+                            <text x="512" y="300" text-anchor="middle" fill="white" font-size="60" font-family="Arial">Foto 2D Demo</text>
+                            <text x="512" y="400" text-anchor="middle" fill="#e0e0e0" font-size="30" font-family="Arial">Agrega tu imagen 2D</text>
+                        </svg>
+                    `);
+                }
+
+                const loader = new THREE.TextureLoader();
+                loader.crossOrigin = 'anonymous';
+                
+                loader.load(
+                    imageUrl,
+                    (texture) => {
+                        const geometry = new THREE.PlaneGeometry(400, 300);
+                        const material = new THREE.MeshBasicMaterial({ map: texture });
+                        
+                        this.mesh = new THREE.Mesh(geometry, material);
+                        this.scene.add(this.mesh);
+                        
+                        this.camera.position.set(0, 0, 200);
+                        this.camera.lookAt(0, 0, 0);
+                        
+                        this.showMessage('Foto 2D cargada exitosamente', 'success');
+                    },
+                    undefined,
+                    (error) => {
+                        console.error('Error cargando foto:', error);
+                        this.showMessage('Error al cargar la foto. Verifica la URL.', 'error');
+                        this.loadPhoto2D(); // Cargar demo
+                    }
+                );
+            }
+
+            addPOI(title, type, content, coordinates) {
+                if (!this.currentScene) {
+                    this.showMessage('Selecciona una escena primero', 'error');
+                    return;
+                }
+
+                if (!coordinates && !this.clickCoordinates) {
+                    this.showMessage('Haz clic en la escena para establecer coordenadas', 'error');
+                    return;
+                }
+
+                const poi = {
+                    id: Date.now(),
+                    sceneId: this.currentScene.id,
+                    title: title || 'POI sin título',
+                    type: type || 'info',
+                    content: content || '',
+                    coordinates: coordinates || this.clickCoordinates
+                };
+
+                if (!this.pois[this.currentScene.id]) {
+                    this.pois[this.currentScene.id] = [];
+                }
+
+                this.pois[this.currentScene.id].push(poi);
+                this.createPOIMarker(poi);
+                this.updatePOIList();
+                this.showMessage(`POI "${poi.title}" agregado exitosamente`, 'success');
+
+                // Reset coordinates
+                this.clickCoordinates = null;
+                document.getElementById('coordinateDisplay').textContent = 'Coordenadas: Haz clic en la escena';
+                document.getElementById('addPoiBtn').disabled = true;
+
+                return poi.id;
+            }
+
+            createPOIMarker(poi) {
+                const marker = document.createElement('div');
+                marker.className = `poi-marker ${poi.type}`;
+                marker.style.left = poi.coordinates.x + 'px';
+                marker.style.top = poi.coordinates.y + 'px';
+                
+                // Icono según tipo
+                const icons = {
+                    info: 'ℹ️',
+                    link: '🔗',
+                    model: '📦'
+                };
+                marker.innerHTML = icons[poi.type] || 'ℹ️';
+
+                // Tooltip
+                const tooltip = document.createElement('div');
+                tooltip.className = 'poi-tooltip';
+                tooltip.textContent = poi.title;
+                marker.appendChild(tooltip);
+
+                // Click handler
+                marker.addEventListener('click', () => this.showPOIInfo(poi));
+
+                document.getElementById('canvasContainer').appendChild(marker);
+            }
+
+            loadScenePOIs(sceneId) {
+                // Limpiar marcadores existentes
+                const markers = document.querySelectorAll('.poi-marker');
+                markers.forEach(marker => marker.remove());
+
+                // Cargar POIs de la escena
+                if (this.pois[sceneId]) {
+                    this.pois[sceneId].forEach(poi => this.createPOIMarker(poi));
+                }
+            }
+
+            showPOIInfo(poi) {
+                const panel = document.getElementById('infoPanel');
+                const title = document.getElementById('infoTitle');
+                const content = document.getElementById('infoContent');
+
+                title.textContent = poi.title;
+                
+                if (poi.type === 'link') {
+                    const targetScene = this.scenes.find(s => s.name === poi.content);
+                    if (targetScene) {
+                        content.innerHTML = `
+                            <p>Enlace a escena: <strong>${poi.content}</strong></p>
+                            <button class="btn" onclick="tour.loadScene(${targetScene.id})">Ir a escena</button>
+                        `;
+                    } else {
+                        content.innerHTML = `<p><strong>Enlace:</strong> ${poi.content}</p>`;
+                    }
+                } else {
+                    content.innerHTML = `<p>${poi.content}</p>`;
+                }
+
+                panel.classList.add('active');
+            }
+
+            updateSceneList() {
+                const list = document.getElementById('sceneList');
+                list.innerHTML = '';
+
+                this.scenes.forEach(scene => {
+                    const item = document.createElement('li');
+                    item.className = 'scene-item';
+                    if (this.currentScene && scene.id === this.currentScene.id) {
+                        item.classList.add('active');
+                    }
+
+                    item.innerHTML = `
+                        <div class="scene-title">${scene.name}</div>
+                        <div class="scene-type">${scene.type} - ${this.pois[scene.id] ? this.pois[scene.id].length : 0} POIs</div>
+                    `;
+
+                    item.addEventListener('click', () => {
+                        document.getElementById('currentScene').value = scene.id;
+                        this.loadScene(scene.id);
+                        this.updateSceneList();
+                    });
+
+                    list.appendChild(item);
+                });
+            }
+
+            updateSceneSelector() {
+                const selector = document.getElementById('currentScene');
+                selector.innerHTML = '<option value="">Seleccionar escena...</option>';
+
+                this.scenes.forEach(scene => {
+                    const option = document.createElement('option');
+                    option.value = scene.id;
+                    option.textContent = scene.name;
+                    selector.appendChild(option);
+                });
+            }
+
+            updatePOIList() {
+                const list = document.getElementById('poiList');
+                list.innerHTML = '';
+
+                if (this.currentScene && this.pois[this.currentScene.id]) {
+                    this.pois[this.currentScene.id].forEach(poi => {
+                        const item = document.createElement('li');
+                        item.className = 'poi-item';
+                        item.innerHTML = `
+                            <div class="poi-info">
+                                <div class="poi-title">${poi.title}</div>
+                                <div class="poi-coords">${poi.type} - (${poi.coordinates.x}, ${poi.coordinates.y})</div>
+                            </div>
+                            <div class="poi-actions">
+                                <button class="btn btn-small btn-danger" onclick="tour.removePOI(${poi.id})">×</button>
+                            </div>
+                        `;
+                        list.appendChild(item);
+                    });
+                }
+            }
+
+            removePOI(poiId) {
+                if (this.currentScene && this.pois[this.currentScene.id]) {
+                    this.pois[this.currentScene.id] = this.pois[this.currentScene.id].filter(poi => poi.id !== poiId);
+                    this.loadScenePOIs(this.currentScene.id);
+                    this.updatePOIList();
+                    this.showMessage('POI eliminado', 'success');
+                }
+            }
+
+            exportTour() {
+                const tourData = {
+                    scenes: this.scenes,
+                    pois: this.pois,
+                    assets: this.assets,
+                    metadata: {
+                        created: new Date().toISOString(),
+                        version: '2.0'
+                    }
+                };
+
+                const htmlContent = this.generateHTML(tourData);
+                
+                const blob = new Blob([htmlContent], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'tour-virtual.html';
+                a.click();
+                URL.revokeObjectURL(url);
+
+                this.showMessage('Tour HTML generado y descargado', 'success');
+            }
+
+            generateHTML(tourData) {
+                return `<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tour Virtual</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        /* CSS minificado del tour */
+        body { margin: 0; padding: 0; font-family: Arial, sans-serif; background: #1a1a1a; color: #e0e0e0; overflow: hidden; }
+        .viewer { width: 100vw; height: 100vh; position: relative; }
+        .controls { position: absolute; top: 20px; right: 20px; z-index: 1000; }
+        .btn { padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        .poi-marker { position: absolute; width: 40px; height: 40px; border-radius: 50%; background: #4CAF50; border: 3px solid white; cursor: pointer; transform: translate(-50%, -50%); z-index: 100; display: flex; align-items: center; justify-content: center; color: white; font-size: 16px; }
+        .poi-marker.info { background: #2196F3; }
+        .poi-marker.link { background: #FF9800; }
+        .poi-marker.model { background: #9C27B0; }
+        .info-panel { position: absolute; bottom: 20px; left: 20px; right: 20px; background: rgba(42, 42, 42, 0.95); border-radius: 8px; padding: 20px; transform: translateY(100%); transition: transform 0.3s ease; z-index: 1000; }
+        .info-panel.active { transform: translateY(0); }
+    </style>
+</head>
+<body>
+    <div class="viewer">
+        <div id="canvasContainer"></div>
+        <div class="controls">
+            <select id="sceneSelector" class="btn">
+                ${tourData.scenes.map(scene => `<option value="${scene.id}">${scene.name}</option>`).join('')}
+            </select>
+        </div>
+        <div class="info-panel" id="infoPanel">
+            <h3 id="infoTitle">Título</h3>
+            <div id="infoContent">Contenido</div>
+            <button class="btn" onclick="closeInfo()">Cerrar</button>
+        </div>
+    </div>
+    <script>
+        // JavaScript del tour minificado
+        const tourData = ${JSON.stringify(tourData)};
+        
+        class SimpleTour {
+            constructor() {
+                this.scenes = tourData.scenes;
+                this.pois = tourData.pois;
+                this.currentScene = null;
+                this.init();
+            }
+            
+            init() {
+                // Implementación básica del reproductor
+                const container = document.getElementById('canvasContainer');
+                this.renderer = new THREE.WebGLRenderer();
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                container.appendChild(this.renderer.domElement);
+                
+                this.scene = new THREE.Scene();
+                this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                
+                if (this.scenes.length > 0) {
+                    this.loadScene(this.scenes[0].id);
+                }
+                
+                this.setupControls();
+                this.animate();
+            }
+            
+            loadScene(sceneId) {
+                const scene = this.scenes.find(s => s.id == sceneId);
+                if (!scene) return;
+                
+                this.currentScene = scene;
+                this.loadPanorama(scene.url);
+                this.loadPOIs(sceneId);
+            }
+            
+            loadPanorama(url) {
+                if (!url) return;
+                
+                const loader = new THREE.TextureLoader();
+                loader.load(url, (texture) => {
+                    if (this.mesh) this.scene.remove(this.mesh);
+                    
+                    const geometry = new THREE.SphereGeometry(500, 64, 32);
+                    const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.BackSide });
+                    this.mesh = new THREE.Mesh(geometry, material);
+                    this.scene.add(this.mesh);
+                });
+            }
+            
+            loadPOIs(sceneId) {
+                document.querySelectorAll('.poi-marker').forEach(m => m.remove());
+                
+                if (this.pois[sceneId]) {
+                    this.pois[sceneId].forEach(poi => {
+                        const marker = document.createElement('div');
+                        marker.className = 'poi-marker ' + poi.type;
+                        marker.style.left = poi.coordinates.x + 'px';
+                        marker.style.top = poi.coordinates.y + 'px';
+                        marker.innerHTML = poi.type === 'info' ? 'ℹ️' : poi.type === 'link' ? '🔗' : '📦';
+                        marker.onclick = () => this.showPOI(poi);
+                        document.getElementById('canvasContainer').appendChild(marker);
+                    });
+                }
+            }
+            
+            showPOI(poi) {
+                document.getElementById('infoTitle').textContent = poi.title;
+                document.getElementById('infoContent').innerHTML = poi.content;
+                document.getElementById('infoPanel').classList.add('active');
+            }
+            
+            setupControls() {
+                const canvas = this.renderer.domElement;
+                let isMouseDown = false;
+                let lastX = 0, lastY = 0;
+                
+                canvas.onmousedown = (e) => { isMouseDown = true; lastX = e.clientX; lastY = e.clientY; };
+                canvas.onmouseup = () => isMouseDown = false;
+                canvas.onmousemove = (e) => {
+                    if (isMouseDown) {
+                        this.camera.rotation.y -= (e.clientX - lastX) * 0.005;
+                        this.camera.rotation.x -= (e.clientY - lastY) * 0.005;
+                        lastX = e.clientX; lastY = e.clientY;
                     }
                 };
                 
-                const markersPlugin = app.panoramaViewer.getPlugin(PhotoSphereViewer.MarkersPlugin);
-                markersPlugin.addMarker(marker);
-                
-                panorama.pois.push(marker);
-                showNotification('POI agregado a la imagen 360°');
-            });
-        }
-
-        // Cambiar entre modos
-        function switchTo3D() {
-            app.currentMode = '3d';
-            document.getElementById('renderCanvas').style.display = 'block';
-            document.getElementById('panoramaViewer').style.display = 'none';
-            document.getElementById('modeIndicator').textContent = 'Modo: Vista 3D';
-        }
-
-        function switchTo360() {
-            app.currentMode = '360';
-            document.getElementById('renderCanvas').style.display = 'none';
-            document.getElementById('panoramaViewer').style.display = 'block';
-            document.getElementById('modeIndicator').textContent = 'Modo: Vista 360°';
-        }
-
-        // Volver atrás
-        function goBack() {
-            if (app.history.length > 0) {
-                const previous = app.history.pop();
-                if (previous.mode === '3d') {
-                    switchTo3D();
-                } else {
-                    loadPanoramaInViewer(previous.data);
-                }
+                document.getElementById('sceneSelector').onchange = (e) => this.loadScene(e.target.value);
+            }
+            
+            animate() {
+                requestAnimationFrame(() => this.animate());
+                this.renderer.render(this.scene, this.camera);
             }
         }
-
-        // Toggle sidebar
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const viewer = document.getElementById('viewerContainer');
-            
-            sidebar.classList.toggle('collapsed');
-            viewer.classList.toggle('full-width');
+        
+        function closeInfo() {
+            document.getElementById('infoPanel').classList.remove('active');
         }
+        
+        new SimpleTour();
+    </script>
+</body>
+</html>`;
+            }
 
-        // Actualizar lista de POIs
-        function updatePOIList() {
-            const list = document.getElementById('poiList');
-            list.innerHTML = '';
-            
-            app.pois.forEach(poi => {
-                const item = document.createElement('div');
-                item.className = 'poi-item';
-                item.innerHTML = `
-                    <span class="poi-name">${poi.name}</span>
-                    <span class="poi-type">${poi.type}</span>
-                `;
-                item.onclick = () => {
-                    app.camera.target = poi.position;
+            downloadConfig() {
+                const config = {
+                    scenes: this.scenes,
+                    pois: this.pois,
+                    assets: this.assets
                 };
-                list.appendChild(item);
-            });
+
+                const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'tour-config.json';
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+
+            showMessage(message, type = 'info') {
+                // Crear o actualizar mensaje
+                let messageEl = document.querySelector('.message');
+                if (!messageEl) {
+                    messageEl = document.createElement('div');
+                    messageEl.className = 'message';
+                    document.querySelector('.sidebar-content').prepend(messageEl);
+                }
+
+                messageEl.className = `${type}-message`;
+                messageEl.textContent = message;
+
+                setTimeout(() => {
+                    if (messageEl.parentNode) {
+                        messageEl.remove();
+                    }
+                }, 3000);
+            }
+
+            addAsset(url, name) {
+                if (!url) return;
+                
+                const asset = {
+                    id: Date.now(),
+                    name: name || url.split('/').pop(),
+                    url: url,
+                    type: this.getAssetType(url)
+                };
+
+                this.assets.push(asset);
+                this.updateAssetList();
+                return asset;
+            }
+
+            getAssetType(url) {
+                const ext = url.split('.').pop().toLowerCase();
+                if (['jpg', 'jpeg', 'png', 'webp'].includes(ext)) return 'image';
+                if (['gltf', 'glb', 'obj'].includes(ext)) return 'model';
+                if (['mp4', 'webm'].includes(ext)) return 'video';
+                return 'other';
+            }
+
+            updateAssetList() {
+                const list = document.getElementById('assetList');
+                if (this.assets.length === 0) {
+                    list.innerHTML = '<div class="asset-item"><span>📁 No hay assets guardados</span></div>';
+                    return;
+                }
+
+                list.innerHTML = this.assets.map(asset => `
+                    <div class="asset-item">
+                        <span>${asset.type === 'image' ? '🖼️' : asset.type === 'model' ? '📦' : '📄'} ${asset.name}</span>
+                        <button class="btn btn-small btn-danger" onclick="tour.removeAsset(${asset.id})">×</button>
+                    </div>
+                `).join('');
+            }
+
+            removeAsset(assetId) {
+                this.assets = this.assets.filter(asset => asset.id !== assetId);
+                this.updateAssetList();
+            }
+
+            toggleSidebar() {
+                const sidebar = document.getElementById('sidebar');
+                sidebar.classList.toggle('collapsed');
+            }
         }
 
-        // Actualizar selector de panoramas
-        function updatePanoramaSelect() {
-            const select = document.getElementById('poiPanorama');
-            select.innerHTML = '<option value="">Seleccionar...</option>';
+        // Instancia global
+        let tour;
+
+        // Funciones globales para los botones
+        function addScene() {
+            const name = document.getElementById('sceneName').value;
+            const type = document.getElementById('sceneType').value;
+            const url = document.getElementById('sceneUrl').value;
+
+            if (!name) {
+                tour.showMessage('Ingresa un nombre para la escena', 'error');
+                return;
+            }
+
+            tour.addScene(name, type, url);
             
-            app.panoramas.forEach(panorama => {
-                const option = document.createElement('option');
-                option.value = panorama.id;
-                option.textContent = panorama.name;
-                select.appendChild(option);
-            });
+            // Limpiar campos
+            document.getElementById('sceneName').value = '';
+            document.getElementById('sceneUrl').value = '';
         }
 
-        // Exportar tour
+        function addPOI() {
+            const title = document.getElementById('poiTitle').value;
+            const type = document.getElementById('poiType').value;
+            const content = document.getElementById('poiContent').value;
+
+            if (!title) {
+                tour.showMessage('Ingresa un título para el POI', 'error');
+                return;
+            }
+
+            tour.addPOI(title, type, content);
+            
+            // Limpiar campos
+            document.getElementById('poiTitle').value = '';
+            document.getElementById('poiContent').value = '';
+        }
+
+        function addAsset() {
+            const url = document.getElementById('sceneUrl').value;
+            if (!url) {
+                tour.showMessage('Ingresa una URL para el asset', 'error');
+                return;
+            }
+
+            tour.addAsset(url);
+            tour.showMessage('Asset agregado a la lista', 'success');
+        }
+
         function exportTour() {
-            const tourData = {
-                title: document.getElementById('tourTitle').value || 'Mi Tour Virtual',
-                description: document.getElementById('tourDescription').value,
-                model: app.model ? 'modelo.glb' : null,
-                panoramas: app.panoramas.map(p => ({
-                    id: p.id,
-                    name: p.name,
-                    pois: p.pois
-                })),
-                pois: app.pois.map(poi => ({
-                    id: poi.id,
-                    name: poi.name,
-                    position: {
-                        x: poi.position.x,
-                        y: poi.position.y,
-                        z: poi.position.z
-                    },
-                    type: poi.type,
-                    panoramaId: poi.panoramaId,
-                    info: poi.info
-                })),
-                createdAt: new Date().toISOString()
-            };
-            
-            // Descargar JSON
-            const blob = new Blob([JSON.stringify(tourData, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'tour-virtual.json';
-            a.click();
-            
-            showNotification('Tour exportado correctamente');
+            tour.exportTour();
         }
 
-        // Entrar en modo VR
-        function enterVR() {
-            if (app.currentMode === '360' && app.panoramaViewer) {
-                // Photo Sphere Viewer no tiene soporte VR nativo, pero podemos usar WebXR
-                if ('xr' in navigator) {
-                    showNotification('Iniciando modo VR...');
-                    // Aquí iría la implementación de WebXR
-                } else {
-                    showNotification('VR no disponible en este navegador');
-                }
-            } else {
-                // Para Babylon.js
-                if (app.scene.createDefaultVRExperience) {
-                    app.scene.createDefaultVRExperience();
-                    showNotification('Modo VR activado');
-                } else {
-                    showNotification('VR no disponible');
-                }
-            }
+        function downloadConfig() {
+            tour.downloadConfig();
         }
 
-        // Síntesis de voz
-        function speak(text) {
-            if (app.speech) {
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'es-ES';
-                app.speech.speak(utterance);
-            }
+        function closeInfo() {
+            document.getElementById('infoPanel').classList.remove('active');
         }
 
-        // Mostrar globo de información
-        function showInfoBubble(text) {
-            // Aquí iría la implementación del globo de información
-            alert(text); // Placeholder
+        function toggleSidebar() {
+            tour.toggleSidebar();
         }
 
-        // Notificaciones
-        function showNotification(message) {
-            // Crear notificación temporal
-            const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                top: 2rem;
-                left: 50%;
-                transform: translateX(-50%);
-                background: rgba(34, 197, 94, 0.9);
-                color: white;
-                padding: 1rem 2rem;
-                border-radius: 8px;
-                font-weight: 500;
-                z-index: 1000;
-                animation: fadeIn 0.3s ease;
-            `;
-            notification.textContent = message;
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.style.opacity = '0';
-                setTimeout(() => notification.remove(), 300);
-            }, 3000);
+        function loadScene(sceneId) {
+            tour.loadScene(sceneId);
         }
 
-        // Detectar teclas
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                if (document.getElementById('poiModal').classList.contains('active')) {
-                    closePOIModal();
-                } else {
-                    goBack();
-                }
-            }
+        // Inicializar cuando se carga la página
+        document.addEventListener('DOMContentLoaded', () => {
+            tour = new VirtualTour();
         });
     </script>
 </body>
